@@ -28,6 +28,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
 
+      - name: Run Tests
+        run: "./build/channel_tests"
+
   test-fedora-34-debug:
     runs-on: ubuntu-latest
     container: fedora:34
@@ -45,6 +48,9 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
+
+      - name: Run Tests
+        run: "./build/channel_tests"
 
   test-fedora-35-release:
     runs-on: ubuntu-latest
@@ -64,6 +70,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
 
+      - name: Run Tests
+        run: "./build/channel_tests"
+
   test-fedora-35-debug:
     runs-on: ubuntu-latest
     container: fedora:35
@@ -81,6 +90,9 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
+
+      - name: Run Tests
+        run: "./build/channel_tests"
 
   test-fedora-36-release:
     runs-on: ubuntu-latest
@@ -100,6 +112,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
 
+      - name: Run Tests
+        run: "./build/channel_tests"
+
   test-fedora-36-debug:
     runs-on: ubuntu-latest
     container: fedora:36
@@ -117,3 +132,6 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
+
+      - name: Run Tests
+        run: "./build/channel_tests"

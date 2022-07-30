@@ -27,6 +27,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
 
+      - name: Run Tests
+        run: "./build/channel_tests"
+
   test-ubuntu-focal-debug:
     runs-on: ubuntu-20.04
     strategy:
@@ -43,6 +46,9 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
+
+      - name: Run Tests
+        run: "./build/channel_tests"
 
   test-ubuntu-jammy-release:
     runs-on: ubuntu-22.04
@@ -61,6 +67,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
 
+      - name: Run Tests
+        run: "./build/channel_tests"
+
   test-ubuntu-jammy-debug:
     runs-on: ubuntu-22.04
     strategy:
@@ -77,3 +86,6 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
+
+      - name: Run Tests
+        run: "./build/channel_tests"

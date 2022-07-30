@@ -28,6 +28,9 @@ jobs:
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
 
+      - name: Run Tests
+        run: "./build/channel_tests"
+
   test-arch-debug:
     runs-on: ubuntu-latest
     container: archlinux
@@ -45,3 +48,6 @@ jobs:
 
       - name: Compile
         run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
+
+      - name: Run Tests
+        run: "./build/channel_tests"
