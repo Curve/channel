@@ -7,5 +7,5 @@
 #ifndef blocking
 #define blocking
 #else
-#undef thread_safe
+#undef blocking
 #endif
