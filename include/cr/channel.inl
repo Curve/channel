@@ -45,7 +45,7 @@ namespace cr
         auto entry = std::move(m_queue->front());
         m_queue->pop();
 
-        return std::get<T>(entry);
+        return std::move(std::get<T>(entry));
     }
 
     template <typename... Messages> //
