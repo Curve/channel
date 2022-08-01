@@ -69,4 +69,6 @@ namespace cr
 
         return {sender<Messages...>{mutex, queue, cond}, receiver<Messages...>{mutex, queue, cond}};
     }
+
+    template <typename... Messages> channel_from<channel_t<Messages...>>::channel_from() : std::pair<sender<Messages...>, receiver<Messages...>>(channel<Messages...>()) {}
 } // namespace cr

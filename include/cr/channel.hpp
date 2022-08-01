@@ -49,6 +49,18 @@ namespace cr
     };
 
     template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel();
+
+    template <typename... Messages> struct channel_t
+    {
+        using sender_t = sender<Messages...>;
+        using receiver_t = receiver<Messages...>;
+    };
+
+    template <typename> struct channel_from;
+    template <typename... Messages> struct channel_from<channel_t<Messages...>> : public std::pair<sender<Messages...>, receiver<Messages...>>
+    {
+        channel_from();
+    };
 } // namespace cr
 #include "utils/annotations.hpp"
 
