@@ -19,7 +19,7 @@ set(channel_tests OFF)
 
 > **Note**  
 > This library requires a C++20 capable compiler.
-> In case you need support for C++17 checkout commits prior to 6977815409b4c3c02d74a7aee3fc29f01d632feb
+> In case you need support for C++17 checkout commits prior to [6977815](https://github.com/Soundux/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb)
 
 - FetchContent
     ```cmake
