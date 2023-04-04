@@ -10,8 +10,8 @@ on:
 
 name: Test on Ubuntu
 jobs:
-  test-ubuntu-focal-release:
-    runs-on: ubuntu-20.04
+  test-ubuntu-release:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -30,48 +30,8 @@ jobs:
       - name: Run Tests
         run: "./build/channel_tests"
 
-  test-ubuntu-focal-debug:
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["cpp"]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.4.0
-
-      - name: Install build dependencies
-        run: "sudo apt-get update && sudo apt-get install git build-essential cmake"
-
-      - name: Compile
-        run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Debug"
-
-      - name: Run Tests
-        run: "./build/channel_tests"
-
-  test-ubuntu-jammy-release:
-    runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ["cpp"]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2.4.0
-
-      - name: Install build dependencies
-        run: "sudo apt-get update && sudo apt-get install git build-essential cmake"
-
-      - name: Compile
-        run: "mkdir build && cd build && cmake .. -Dchannel_tests=ON && cmake --build . --config Release"
-
-      - name: Run Tests
-        run: "./build/channel_tests"
-
-  test-ubuntu-jammy-debug:
-    runs-on: ubuntu-22.04
+  test-ubuntu-debug:
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
