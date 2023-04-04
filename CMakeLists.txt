@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-project(channel LANGUAGES CXX VERSION 1.3)
+cmake_minimum_required(VERSION 3.12)
+project(channel LANGUAGES CXX VERSION 2.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -14,8 +14,8 @@ option(channel_tests "Build tests" OFF)
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(cr::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
 
 # --------------------------------------------------------------------------------------------------------
 # Include "include" folder
@@ -46,8 +46,8 @@ if (channel_tests)
         target_compile_options(${PROJECT_NAME}_tests INTERFACE -Wall -Werror -Wextra -pedantic)
     endif()
 
-    target_compile_features(${PROJECT_NAME}_tests INTERFACE cxx_std_17)
-    set_target_properties(${PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 17 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
+    target_compile_features(${PROJECT_NAME}_tests INTERFACE cxx_std_20)
+    set_target_properties(${PROJECT_NAME}_tests PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS OFF CXX_STANDARD_REQUIRED ON)
 endif()
 
 # --------------------------------------------------------------------------------------------------------
