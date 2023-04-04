@@ -12,8 +12,8 @@ namespace cr
 
     template <typename... T> struct recipe
     {
-        using sender = sender<internal::deduce_t<T...>>;
-        using receiver = receiver<internal::deduce_t<T...>>;
+        using sender_t = sender<internal::deduce_t<T...>>;
+        using receiver_t = receiver<internal::deduce_t<T...>>;
     };
 
     template <typename... T> auto channel();

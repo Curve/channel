@@ -19,7 +19,7 @@ namespace cr
             }
             else if constexpr (is_recipe<first_t>)
             {
-                using sender_t = typename first_t::sender;
+                using sender_t = typename first_t::sender_t;
                 return []<typename O>(sender<O> *) { return std::type_identity<O>{}; }(static_cast<sender_t *>(nullptr));
             }
             else

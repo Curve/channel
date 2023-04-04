@@ -19,7 +19,7 @@ template <typename T> struct result
 
 using recipe = cr::recipe<add, lower, result<int>, result<std::string>>;
 
-void handler(recipe::receiver receiver, recipe::sender sender)
+void handler(recipe::receiver_t receiver, recipe::sender_t sender)
 {
     for (int i = 0; 2 > i; i++)
     {
