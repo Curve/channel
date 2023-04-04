@@ -3,72 +3,35 @@
 
 namespace cr
 {
-    template <typename... Messages> //
-    sender<Messages...>::sender(const sender &other) = default;
-
-    template <typename... Messages> //
-    sender<Messages...>::sender(sender &&other) noexcept = default;
-
-    template <typename... Messages> //
-    sender<Messages...>::sender(decltype(m_mutex) mutex, decltype(m_queue) queue, decltype(m_cond) cond)
-        : m_mutex(std::move(mutex)), m_queue(std::move(queue)), m_cond(std::move(cond))
+    namespace internal
     {
-    }
+        template <typename T>
+        concept is_recipe = requires(T &t) { []<typename... O>(recipe<O...> &) {}(t); };
 
-    template <typename... Messages> //
-    template <typename T>
-    void sender<Messages...>::send(T &&message)
-    {
+        template <typename... T> consteval auto deduce()
         {
-            std::lock_guard guard(*m_mutex);
-            m_queue->emplace(std::forward<T>(message));
+            constexpr auto extract_first = []<typename F, typename... O>(F, O...) { return std::type_identity<F>{}; };
+            using first_t = typename decltype(extract_first(std::declval<T>()...))::type;
+
+            if constexpr (sizeof...(T) > 1)
+            {
+                return std::type_identity<std::variant<T...>>{};
+            }
+            else if constexpr (is_recipe<first_t>)
+            {
+                using sender_t = typename first_t::sender;
+                return []<typename O>(sender<O> *) { return std::type_identity<O>{}; }(static_cast<sender_t *>(nullptr));
+            }
+            else
+            {
+                return std::type_identity<first_t>{};
+            }
         }
-        m_cond->notify_one();
-    }
+    } // namespace internal
 
-    template <typename... Messages> //
-    receiver<Messages...>::receiver(receiver &&other) noexcept = default;
-
-    template <typename... Messages> //
-    receiver<Messages...>::receiver(decltype(m_mutex) mutex, decltype(m_queue) queue, decltype(m_cond) cond)
-        : m_mutex(std::move(mutex)), m_queue(std::move(queue)), m_cond(std::move(cond))
+    template <typename... T> auto channel()
     {
+        auto queue = std::make_shared<cr::queue<internal::deduce_t<T...>>>();
+        return std::make_pair(cr::sender(queue), cr::receiver(queue));
     }
-
-    template <typename... Messages> //
-    template <typename T>
-    T receiver<Messages...>::receive_as()
-    {
-        std::unique_lock lock(*m_mutex);
-        m_cond->wait(lock, [this] { return !m_queue->empty(); });
-
-        auto entry = std::move(m_queue->front());
-        m_queue->pop();
-
-        return std::move(std::get<T>(entry));
-    }
-
-    template <typename... Messages> //
-    template <typename Callback>
-    void receiver<Messages...>::receive(Callback &&callback)
-    {
-        std::unique_lock lock(*m_mutex);
-        m_cond->wait(lock, [this] { return !m_queue->empty(); });
-
-        auto entry = std::move(m_queue->front());
-        m_queue->pop();
-
-        std::visit(std::forward<Callback>(callback), std::move(entry));
-    }
-
-    template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel()
-    {
-        auto mutex = std::make_shared<std::mutex>();
-        auto queue = std::make_shared<std::queue<std::variant<Messages...>>>();
-        auto cond = std::make_shared<std::condition_variable>();
-
-        return {sender<Messages...>{mutex, queue, cond}, receiver<Messages...>{mutex, queue, cond}};
-    }
-
-    template <typename... Messages> channel_from<channel_t<Messages...>>::channel_from() : std::pair<sender<Messages...>, receiver<Messages...>>(channel<Messages...>()) {}
 } // namespace cr

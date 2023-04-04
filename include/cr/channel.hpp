@@ -1,67 +1,22 @@
 #pragma once
-#include <queue>
-#include <memory>
-#include <variant>
-#include <condition_variable>
+#include "sender.hpp"
+#include "receiver.hpp"
 
-#include "utils/annotations.hpp"
 namespace cr
 {
-    template <typename... Messages> class sender
+    namespace internal
     {
-        using variant_t = std::variant<Messages...>;
+        template <typename... T> consteval auto deduce();
+        template <typename... T> using deduce_t = typename decltype(deduce<T...>())::type;
+    } // namespace internal
 
-      private:
-        std::shared_ptr<std::mutex> m_mutex;
-        std::shared_ptr<std::queue<variant_t>> m_queue;
-        std::shared_ptr<std::condition_variable> m_cond;
-
-      public:
-        sender(const sender &);
-        sender(sender &&) noexcept;
-        sender(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
-
-      public:
-        template <typename T> //
-        [[thread_safe]] void send(T && = {});
+    template <typename... T> struct recipe
+    {
+        using sender = sender<internal::deduce_t<T...>>;
+        using receiver = receiver<internal::deduce_t<T...>>;
     };
 
-    template <typename... Messages> class receiver
-    {
-        using variant_t = std::variant<Messages...>;
-
-      private:
-        std::shared_ptr<std::mutex> m_mutex;
-        std::shared_ptr<std::queue<variant_t>> m_queue;
-        std::shared_ptr<std::condition_variable> m_cond;
-
-      public:
-        receiver(receiver &&) noexcept;
-        receiver(const receiver &) = delete;
-        receiver(decltype(m_mutex), decltype(m_queue), decltype(m_cond));
-
-      public:
-        template <typename T> //
-        [[blocking]] [[thread_safe]] T receive_as();
-
-        template <typename Callback> //
-        [[blocking]] [[thread_safe]] void receive(Callback &&);
-    };
-
-    template <typename... Messages> std::pair<sender<Messages...>, receiver<Messages...>> channel();
-
-    template <typename... Messages> struct channel_t
-    {
-        using sender_t = sender<Messages...>;
-        using receiver_t = receiver<Messages...>;
-    };
-
-    template <typename> struct channel_from;
-    template <typename... Messages> struct channel_from<channel_t<Messages...>> : public std::pair<sender<Messages...>, receiver<Messages...>>
-    {
-        channel_from();
-    };
+    template <typename... T> auto channel();
 } // namespace cr
-#include "utils/annotations.hpp"
 
 #include "channel.inl"

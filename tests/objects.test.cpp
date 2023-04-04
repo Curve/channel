@@ -3,56 +3,52 @@
 #include <cr/channel.hpp>
 #include <catch2/catch.hpp>
 
-struct please_add_ten
+struct add
 {
-    int value;
+    int target;
+    int to_add;
 };
-
-struct please_to_lower
+struct lower
 {
-    std::string value;
+    std::string string;
 };
-
 template <typename T> struct result
 {
     T result;
 };
 
-auto [t_sender, t_receiver] = cr::channel<please_add_ten, please_to_lower>();
-auto [sender, receiver] = cr::channel<result<int>, result<std::string>>();
+using recipe = cr::recipe<add, lower, result<int>, result<std::string>>;
 
-void run_in_thread(decltype(t_receiver) receiver, decltype(sender) sender)
+void handler(recipe::receiver receiver, recipe::sender sender)
 {
     for (int i = 0; 2 > i; i++)
     {
-        receiver.receive([&](auto &&arg) {
-            using arg_t = std::decay_t<decltype(arg)>;
-
-            if constexpr (std::is_same_v<arg_t, please_add_ten>)
+        receiver.recv([&]<typename T>(T &&arg) {
+            if constexpr (std::is_same_v<T, add>)
             {
-                sender.send<result<int>>({arg.value + 10});
+                sender.send(result<int>{arg.target + arg.to_add});
             }
-            else if constexpr (std::is_same_v<arg_t, please_to_lower>)
+            else if constexpr (std::is_same_v<T, lower>)
             {
-                auto value = arg.value;
+                auto value = arg.string;
                 std::transform(value.begin(), value.end(), value.begin(), ::tolower);
 
-                sender.send<result<std::string>>({value});
+                sender.send(result<std::string>{value});
             }
         });
     }
 }
 
-TEST_CASE("Check if objects can be properly exchanged", "[channel]")
+TEST_CASE("Basic communication with objects", "[channel]")
 {
-    std::thread t(run_in_thread, std::move(t_receiver), std::move(sender));
+    auto [sender, thread_receiver] = cr::channel<recipe>();
+    auto [thread_sender, receiver] = cr::channel<recipe>();
 
-    t_sender.send<please_add_ten>({20});
-    REQUIRE(receiver.receive_as<result<int>>().result == 30);
+    std::jthread thread(handler, std::move(thread_receiver), std::move(thread_sender));
 
-    t_sender.send<please_to_lower>({"TEST"});
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    REQUIRE(receiver.receive_as<result<std::string>>().result == "test");
+    sender.send(add{.target = 20, .to_add = 10});
+    REQUIRE(receiver.recv_as<result<int>>().result == 30);
 
-    t.join();
+    sender.send(lower{"TEST"});
+    REQUIRE(receiver.recv_as<result<std::string>>().result == "test");
 }
