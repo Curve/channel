@@ -3,7 +3,8 @@
 
 namespace cr
 {
-    template <typename T> receiver<T>::~receiver()
+    template <typename T>
+    receiver<T>::~receiver()
     {
         if (!m_queue)
         {
@@ -13,27 +14,32 @@ namespace cr
         m_queue->receivers--;
     }
 
-    template <typename T> receiver<T>::receiver(std::shared_ptr<queue<T>> queue) : m_queue(queue)
+    template <typename T>
+    receiver<T>::receiver(std::shared_ptr<queue<T>> queue) : m_queue(queue)
     {
         m_queue->receivers++;
     }
 
-    template <typename T> receiver<T>::receiver(receiver &&other) noexcept : m_queue(std::move(other.m_queue))
+    template <typename T>
+    receiver<T>::receiver(receiver &&other) noexcept : m_queue(std::move(other.m_queue))
     {
         other.m_queue = nullptr;
     }
 
-    template <typename T> T receiver<T>::recv()
+    template <typename T>
+    T receiver<T>::recv()
     {
         return m_queue->pop();
     }
 
-    template <typename T> std::optional<T> receiver<T>::try_recv()
+    template <typename T>
+    std::optional<T> receiver<T>::try_recv()
     {
         return m_queue->try_pop(std::chrono::milliseconds(0));
     }
 
-    template <typename T> std::optional<T> receiver<T>::recv_timeout(std::chrono::milliseconds timeout)
+    template <typename T>
+    std::optional<T> receiver<T>::recv_timeout(std::chrono::milliseconds timeout)
     {
         return m_queue->try_pop(timeout);
     }

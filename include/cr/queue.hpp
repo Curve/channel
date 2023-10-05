@@ -8,10 +8,14 @@
 
 namespace cr
 {
-    template <typename T> class queue
+    template <typename T>
+    class queue
     {
-        template <typename> friend class sender;
-        template <typename> friend class receiver;
+        template <typename>
+        friend class sender;
+
+        template <typename>
+        friend class receiver;
 
       private:
         std::queue<T> m_queue;
@@ -31,7 +35,8 @@ namespace cr
         std::optional<T> try_pop(std::chrono::milliseconds);
 
       public:
-        template <typename... Args> void emplace(Args &&...);
+        template <typename... Args>
+        void emplace(Args &&...);
     };
 } // namespace cr
 

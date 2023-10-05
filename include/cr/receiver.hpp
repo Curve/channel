@@ -15,7 +15,8 @@ namespace cr
     template <typename V, typename T>
     concept value_accessible = requires(V &v, T &t) { v = t, std::get<T>(v); };
 
-    template <typename T> class receiver
+    template <typename T>
+    class receiver
     {
         std::shared_ptr<queue<T>> m_queue;
 
@@ -29,7 +30,7 @@ namespace cr
         receiver(receiver &&) noexcept;
 
       public:
-        receiver(const receiver &) = delete;
+        receiver(const receiver &)            = delete;
         receiver &operator=(const receiver &) = delete;
 
       public:

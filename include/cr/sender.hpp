@@ -5,7 +5,8 @@
 
 namespace cr
 {
-    template <typename T> class sender
+    template <typename T>
+    class sender
     {
         std::shared_ptr<queue<T>> m_queue;
 

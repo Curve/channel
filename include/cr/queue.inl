@@ -5,7 +5,8 @@
 
 namespace cr
 {
-    template <typename T> T queue<T>::pop()
+    template <typename T>
+    T queue<T>::pop()
     {
         std::unique_lock lock(m_mutex);
 
@@ -18,7 +19,8 @@ namespace cr
         return rtn;
     }
 
-    template <typename T> std::optional<T> queue<T>::try_pop(std::chrono::milliseconds timeout)
+    template <typename T>
+    std::optional<T> queue<T>::try_pop(std::chrono::milliseconds timeout)
     {
         std::unique_lock lock(m_mutex);
         m_cond.wait_for(lock, timeout, [this] { return !m_queue.empty(); });
@@ -33,7 +35,9 @@ namespace cr
         return rtn;
     }
 
-    template <typename T> template <typename... Args> void queue<T>::emplace(Args &&...args)
+    template <typename T>
+    template <typename... Args>
+    void queue<T>::emplace(Args &&...args)
     {
         assert(!(receivers == 0) && "No receivers exist, message will never be read");
         {
