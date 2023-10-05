@@ -25,8 +25,8 @@ namespace cr
         other.m_queue = nullptr;
     }
 
-    template <typename T> void sender<T>::send(T &&message)
+    template <typename T> void sender<T>::send(T message)
     {
-        m_queue->emplace(std::forward<T>(message));
+        m_queue->emplace(std::move(message));
     }
 } // namespace cr

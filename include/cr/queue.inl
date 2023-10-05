@@ -38,7 +38,7 @@ namespace cr
         assert(!(receivers == 0) && "No receivers exist, message will never be read");
         {
             std::lock_guard lock(m_mutex);
-            m_queue.emplace(args...);
+            m_queue.emplace(std::forward<Args>(args)...);
         }
         m_cond.notify_one();
     }

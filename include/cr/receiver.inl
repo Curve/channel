@@ -43,7 +43,7 @@ namespace cr
         requires visitable<T, Callback>
     void receiver<T>::recv(Callback &&callback)
     {
-        std::visit(callback, m_queue->pop());
+        std::visit(std::forward<Callback>(callback), m_queue->pop());
     }
 
     template <typename T>
@@ -58,7 +58,7 @@ namespace cr
             return;
         }
 
-        std::visit(callback, rtn.value());
+        std::visit(std::forward<Callback>(callback), rtn.value());
     }
 
     template <typename T>
@@ -73,7 +73,7 @@ namespace cr
             return;
         }
 
-        std::visit(callback, rtn.value());
+        std::visit(std::forward<Callback>(callback), rtn.value());
     }
 
     template <typename T>

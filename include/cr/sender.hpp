@@ -20,7 +20,7 @@ namespace cr
         sender(sender &&) noexcept;
 
       public:
-        void send(T && = {});
+        void send(T = {});
     };
 } // namespace cr
 
