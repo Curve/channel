@@ -1,76 +1,90 @@
+#include <boost/ut.hpp>
+#include <cr/channel.hpp>
+
 #include <thread>
 #include <numbers>
-#include <cr/channel.hpp>
-#include <catch2/catch.hpp>
 
-TEST_CASE("Receive variant", "[channel]")
+using namespace boost::ut;
+using namespace boost::ut::literals;
+using namespace std::chrono_literals;
+
+template <class... Ts>
+struct overloaded : Ts...
 {
-    using namespace std::chrono_literals;
+    using Ts::operator()...;
+};
 
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
+
+// NOLINTNEXTLINE
+suite<"variant"> variant_suite = []
+{
     auto [sender, receiver] = cr::channel<int, std::string, double>();
 
-    std::jthread t([receiver = std::move(receiver)]() mutable {
-        REQUIRE(receiver.recv_as<int>() == 10);
-        REQUIRE(std::get<std::string>(receiver.recv()) == "Some message!");
-        receiver.recv([]<typename T>(const T &what) {
-            REQUIRE(std::is_same_v<std::decay_t<T>, double>);
+    auto _t1 = [](decltype(receiver) receiver)
+    {
+        expect(receiver.recv_as<int>() == 10);
+        expect(std::get<std::string>(receiver.recv()) == "Some message!");
 
-            if constexpr (std::is_same_v<std::decay_t<T>, double>)
+        receiver.recv(
+            []<typename T>(const T &what)
             {
-                REQUIRE(what == std::numbers::pi);
-            }
-        });
+                expect(std::is_same_v<std::decay_t<T>, double>);
 
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+                if constexpr (std::is_same_v<T, double>)
+                {
+                    expect(what == std::numbers::pi);
+                }
+            });
 
-        REQUIRE(receiver.try_recv_as<int>() == 10);
-        REQUIRE(std::get<std::string>(receiver.try_recv().value()) == "Some message!");
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+
+        expect(receiver.try_recv_as<int>() == 10);
+        expect(std::get<std::string>(receiver.try_recv().value()) == "Some message!");
 
         bool called = false;
 
-        receiver.try_recv([&]<typename T>(const T &what) {
-            called = true;
-            REQUIRE(std::is_same_v<std::decay_t<T>, double>);
+        receiver.try_recv(overloaded{[&](double what)
+                                     {
+                                         expect(what == std::numbers::pi);
+                                         called = true;
+                                     },
+                                     [](auto &&) {
+                                     }});
 
-            if constexpr (std::is_same_v<std::decay_t<T>, double>)
-            {
-                REQUIRE(what == std::numbers::pi);
-            }
-        });
+        expect(called);
 
-        REQUIRE(called);
-
-        REQUIRE(receiver.recv_timeout_as<int>(10s) == 10);
-        REQUIRE(std::get<std::string>(receiver.recv_timeout(10s).value()) == "Some message!");
+        expect(receiver.recv_timeout_as<int>(10s) == 10);
+        expect(std::get<std::string>(receiver.recv_timeout(10s).value()) == "Some message!");
 
         called = false;
 
-        receiver.recv_timeout(
-            [&]<typename T>(const T &what) {
-                called = true;
-                REQUIRE(std::is_same_v<std::decay_t<T>, double>);
+        receiver.recv_timeout(overloaded{[&](double what)
+                                         {
+                                             expect(what == std::numbers::pi);
+                                             called = true;
+                                         },
+                                         [](auto &&) {
+                                         }},
+                              10s);
 
-                if constexpr (std::is_same_v<std::decay_t<T>, double>)
-                {
-                    REQUIRE(what == std::numbers::pi);
-                }
-            },
-            10s);
+        expect(called);
+    };
 
-        REQUIRE(called);
-    });
-
-    sender.send(10);
-    sender.send("Some message!");
-    sender.send(std::numbers::pi);
+    std::jthread t1{_t1, std::move(receiver)};
 
     sender.send(10);
     sender.send("Some message!");
     sender.send(std::numbers::pi);
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    sender.send(10);
+    sender.send("Some message!");
+    sender.send(std::numbers::pi);
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     sender.send(10);
     sender.send("Some message!");
     sender.send(std::numbers::pi);
-}
+};

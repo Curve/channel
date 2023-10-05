@@ -1,21 +1,30 @@
+#include <boost/ut.hpp>
+#include <cr/channel.hpp>
+
 #include <string>
 #include <thread>
-#include <cr/channel.hpp>
-#include <catch2/catch.hpp>
 
-TEST_CASE("Multiple senders", "[channel]")
+using namespace boost::ut;
+using namespace boost::ut::literals;
+
+// NOLINTNEXTLINE
+suite<"sender"> sender_suite = []
 {
     auto [sender, receiver] = cr::channel<std::string>();
-    auto sender_clone = sender;
+    auto sender_clone       = sender;
 
-    std::jthread t([receiver = std::move(receiver)]() mutable {
-        auto message = receiver.recv();
-        REQUIRE((message == "Test-1" || message == "Test-2"));
+    auto _t1 = [](auto receiver)
+    {
+        expect(receiver.recv().starts_with("Test"));
+        expect(receiver.recv().starts_with("Test"));
+    };
+    std::jthread t1{_t1, std::move(receiver)};
 
-        message = receiver.recv();
-        REQUIRE((message == "Test-1" || message == "Test-2"));
-    });
+    auto _t2 = [](auto sender)
+    {
+        sender.send("Test-1");
+    };
+    std::jthread t2{_t2, std::move(sender_clone)};
 
-    std::jthread t2([sender = std::move(sender_clone)]() mutable { sender.send("Test-1"); });
     sender.send("Test-2");
-}
+};

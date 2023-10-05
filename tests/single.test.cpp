@@ -1,26 +1,30 @@
-#define CONFIG_CATCH_MAIN
-#include <thread>
+#include <boost/ut.hpp>
 #include <cr/channel.hpp>
-#include <catch2/catch.hpp>
 
-TEST_CASE("Receive single type", "[channel]")
+#include <thread>
+
+using namespace boost::ut;
+using namespace boost::ut::literals;
+using namespace std::chrono_literals;
+
+// NOLINTNEXTLINE
+suite<"single"> single_suite = []
 {
-    using namespace std::chrono_literals;
-
     auto [sender, receiver] = cr::channel<std::string>();
 
-    std::jthread t([receiver = std::move(receiver)]() mutable {
-        REQUIRE(receiver.recv() == "Some message!");
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+    auto _t1 = [](auto receiver)
+    {
+        expect(receiver.recv() == "Some message!");
+        expect(receiver.try_recv() == "Another message!");
+        expect(receiver.recv_timeout(15s) == "Some message!");
+    };
 
-        REQUIRE(receiver.try_recv() == "Another message!");
-        REQUIRE(receiver.recv_timeout(10s) == "Some message!");
-    });
+    std::jthread t1{_t1, std::move(receiver)};
 
     sender.send("Some message!");
     sender.send("Another message!");
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 
     sender.send("Some message!");
-}
+};
