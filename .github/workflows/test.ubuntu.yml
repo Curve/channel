@@ -4,7 +4,6 @@ on:
     branches: ["**"]
     paths-ignore:
       - "**/*.md"
-      - "**/*.yml"
   pull_request:
     branches: ["**"]
 
