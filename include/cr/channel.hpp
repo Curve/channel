@@ -17,8 +17,8 @@ namespace cr
     struct recipe
     {
         using is_recipe = std::true_type;
-        using sender    = sender<internal::deduce_t<T...>>;
-        using receiver  = receiver<internal::deduce_t<T...>>;
+        using sender    = cr::sender<internal::deduce_t<T...>>;
+        using receiver  = cr::receiver<internal::deduce_t<T...>>;
     };
 
     template <typename... T>
