@@ -6,9 +6,10 @@ namespace cr
     namespace internal
     {
         template <typename T>
-        concept is_recipe = requires(T &t) {
-            []<typename... O>(recipe<O...> &) {
-            }(t);
+        concept valid_recipe = requires(T) {
+            requires not std::same_as<typename T::sender, void>;
+            requires not std::same_as<typename T::receiver, void>;
+            requires std::same_as<typename T::is_recipe, std::true_type>;
         };
 
         template <typename... T>
@@ -18,23 +19,23 @@ namespace cr
             {
                 return std::type_identity<F>{};
             };
-            using first_t = typename decltype(extract_first(std::declval<T>()...))::type;
 
-            if constexpr (sizeof...(T) > 1)
+            using first = typename decltype(extract_first(std::declval<T>()...))::type;
+
+            if constexpr (valid_recipe<first>)
+            {
+                return []<template <typename> typename sender, typename O>(sender<O> *)
+                {
+                    return std::type_identity<O>{};
+                }(static_cast<first::sender *>(nullptr));
+            }
+            else if constexpr (sizeof...(T) > 1)
             {
                 return std::type_identity<std::variant<T...>>{};
             }
-            else if constexpr (is_recipe<first_t>)
-            {
-                using sender_t = typename first_t::sender_t;
-                return []<typename O>(sender<O> *)
-                {
-                    return std::type_identity<O>{};
-                }(static_cast<sender_t *>(nullptr));
-            }
             else
             {
-                return std::type_identity<first_t>{};
+                return std::type_identity<first>{};
             }
         }
     } // namespace internal
@@ -43,6 +44,6 @@ namespace cr
     auto channel()
     {
         auto queue = std::make_shared<cr::queue<internal::deduce_t<T...>>>();
-        return std::make_pair(cr::sender(queue), cr::receiver(queue));
+        return std::make_pair(cr::sender{queue}, cr::receiver{queue});
     }
 } // namespace cr

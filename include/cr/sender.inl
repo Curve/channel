@@ -32,6 +32,13 @@ namespace cr
     template <typename T>
     void sender<T>::send(T message)
     {
-        m_queue->emplace(std::move(message));
+        if constexpr (std::movable<T>)
+        {
+            m_queue->emplace(std::move(message));
+        }
+        else
+        {
+            m_queue->emplace(message);
+        }
     }
 } // namespace cr
