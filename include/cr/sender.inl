@@ -21,7 +21,10 @@ namespace cr
     }
 
     template <typename T>
-    sender<T>::sender(const sender &) = default;
+    sender<T>::sender(const sender &other) : m_queue(other.m_queue)
+    {
+        m_queue->senders++;
+    }
 
     template <typename T>
     sender<T>::sender(sender &&other) noexcept : m_queue(std::move(other.m_queue))
