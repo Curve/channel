@@ -19,19 +19,19 @@ set(channel_tests OFF)
 
 > **Note**  
 > This library requires a C++20 capable compiler.
-> In case you need support for C++17 checkout commits prior to [6977815](https://github.com/Soundux/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb)
+> In case you need support for C++17 checkout commits prior to [6977815](https://github.com/Curve/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb)
 
 - FetchContent
     ```cmake
     include(FetchContent)
-    FetchContent_Declare(channel GIT_REPOSITORY "https://github.com/Soundux/channel")
+    FetchContent_Declare(channel GIT_REPOSITORY "https://github.com/Curve/channel")
 
     FetchContent_MakeAvailable(channel)
     target_link_libraries(<YourLibrary> cr::channel)
     ```
 - Git Submodule
     ```bash
-    git submodule add "https://github.com/Soundux/channel"
+    git submodule add "https://github.com/Curve/channel"
     ```
     ```cmake
     # Somewhere in your CMakeLists.txt
