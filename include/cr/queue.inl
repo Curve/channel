@@ -25,9 +25,9 @@ namespace cr
         std::unique_lock lock(m_mutex);
 
         assert(!(m_queue.empty() && senders == 0) && "No senders exist, try_pop will timeout");
-        auto status = m_cond.wait_for(lock, timeout, [this] { return !m_queue.empty(); });
+        auto success = m_cond.wait_for(lock, timeout, [this] { return !m_queue.empty(); });
 
-        if (status == std::cv_status::timeout)
+        if (!success)
         {
             return std::nullopt;
         }
