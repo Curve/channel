@@ -6,18 +6,9 @@ A C++20 library that provides a rust like `std::sync::mpsc::channel` for inter-t
 
 </div>
 
-# ⚙️ Configuration
-
-## Tests
-
-```cmake
-set(channel_tests OFF)
-```
-> If set to `ON`, *channel* will build tests.
-
 # 📦 Installation
 
-> **Note**  
+> [!NOTE]  
 > This library requires a C++20 capable compiler.
 > In case you need support for C++17 checkout commits prior to [6977815](https://github.com/Curve/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb)
 
@@ -44,6 +35,7 @@ set(channel_tests OFF)
 ```cpp
 #include <thread>
 #include <iostream>
+
 #include <cr/channel.hpp>
 
 auto [sender, receiver] = cr::channel<int, float>();
