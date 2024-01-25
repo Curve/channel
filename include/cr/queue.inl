@@ -23,15 +23,18 @@ namespace cr
     std::optional<T> queue<T>::try_pop(std::chrono::milliseconds timeout)
     {
         std::unique_lock lock(m_mutex);
-        m_cond.wait_for(lock, timeout, [this] { return !m_queue.empty(); });
 
-        if (m_queue.empty())
+        assert(!(m_queue.empty() && senders == 0) && "No senders exist, try_pop will timeout");
+        auto status = m_cond.wait_for(lock, timeout, [this] { return !m_queue.empty(); });
+
+        if (status == std::cv_status::timeout)
         {
             return std::nullopt;
         }
 
         auto rtn = std::move(m_queue.front());
         m_queue.pop();
+
         return rtn;
     }
 
