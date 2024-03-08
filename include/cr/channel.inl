@@ -6,7 +6,7 @@ namespace cr
     namespace internal
     {
         template <typename T>
-        concept valid_recipe = requires(T) {
+        concept valid_recipe = requires() {
             requires not std::same_as<typename T::sender, void>;
             requires not std::same_as<typename T::receiver, void>;
             requires std::same_as<typename T::is_recipe, std::true_type>;
