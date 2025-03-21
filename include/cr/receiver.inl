@@ -11,12 +11,6 @@ namespace cr
     }
 
     template <typename T>
-    receiver<T>::receiver(receiver &&other) noexcept : m_queue(std::move(other.m_queue))
-    {
-        other.m_queue = nullptr;
-    }
-
-    template <typename T>
     receiver<T>::~receiver()
     {
         if (!m_queue)

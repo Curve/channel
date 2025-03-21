@@ -25,7 +25,8 @@ namespace cr
         receiver(std::shared_ptr<queue<T>>);
 
       public:
-        receiver(receiver &&) noexcept;
+        receiver(receiver &&) noexcept = default;
+        receiver &operator=(receiver &&) noexcept = default;
 
       public:
         receiver(const receiver &)            = delete;
