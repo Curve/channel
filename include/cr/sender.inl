@@ -1,19 +1,11 @@
 #pragma once
+
 #include "sender.hpp"
+
+#include <utility>
 
 namespace cr
 {
-    template <typename T>
-    sender<T>::~sender()
-    {
-        if (!m_queue)
-        {
-            return;
-        }
-
-        m_queue->senders--;
-    }
-
     template <typename T>
     sender<T>::sender(std::shared_ptr<queue<T>> queue) : m_queue(queue)
     {
@@ -27,21 +19,24 @@ namespace cr
     }
 
     template <typename T>
-    sender<T>::sender(sender &&other) noexcept : m_queue(std::move(other.m_queue))
+    sender<T>::sender(sender &&other) noexcept : m_queue(std::exchange(other.m_queue, nullptr))
     {
-        other.m_queue = nullptr;
+    }
+
+    template <typename T>
+    sender<T>::~sender()
+    {
+        if (!m_queue)
+        {
+            return;
+        }
+
+        m_queue->senders--;
     }
 
     template <typename T>
     void sender<T>::send(T message)
     {
-        if constexpr (std::movable<T>)
-        {
-            m_queue->emplace(std::move(message));
-        }
-        else
-        {
-            m_queue->emplace(message);
-        }
+        m_queue->emplace(std::move(message));
     }
 } // namespace cr

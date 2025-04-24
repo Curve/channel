@@ -1,24 +1,27 @@
 #pragma once
+
 #include "sender.hpp"
 #include "receiver.hpp"
 
 namespace cr
 {
-    namespace internal
+    namespace impl
     {
-        template <typename... T>
-        consteval auto deduce();
+        template <typename... Ts>
+        struct deduce;
 
-        template <typename... T>
-        using deduce_t = typename decltype(deduce<T...>())::type;
-    } // namespace internal
+        template <typename... Ts>
+        using deduce_t = deduce<Ts...>::type;
+    } // namespace impl
 
     template <typename... T>
     struct recipe
     {
-        using is_recipe = std::true_type;
-        using sender    = cr::sender<internal::deduce_t<T...>>;
-        using receiver  = cr::receiver<internal::deduce_t<T...>>;
+        using sender   = cr::sender<impl::deduce_t<T...>>;
+        using receiver = cr::receiver<impl::deduce_t<T...>>;
+
+      public:
+        static constexpr bool is_recipe = true;
     };
 
     template <typename... T>

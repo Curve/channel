@@ -3,6 +3,7 @@
 
 #include <string>
 #include <thread>
+#include <ranges>
 
 using namespace boost::ut;
 using namespace boost::ut::literals;
@@ -26,6 +27,12 @@ struct result
 
 using recipe = cr::recipe<add, lower, result<int>, result<std::string>>;
 
+template <typename... Ts>
+struct overload : Ts...
+{
+    using Ts::operator()...;
+};
+
 // NOLINTNEXTLINE
 suite<"object"> object_suite = []
 {
@@ -33,21 +40,21 @@ suite<"object"> object_suite = []
     {
         for (int i = 0; 2 > i; i++)
         {
-            receiver.recv(
-                [&]<typename T>(const T &arg)
-                {
-                    if constexpr (std::is_same_v<T, add>)
-                    {
-                        sender.send(result<int>{arg.target + arg.to_add});
-                    }
-                    else if constexpr (std::is_same_v<T, lower>)
-                    {
-                        auto value = arg.string;
-                        std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+            auto visit = overload{[&](const add &arg) //
+                                  {                   //
+                                      sender.send(result<int>{arg.target + arg.to_add});
+                                  },
+                                  [&](const lower &arg)
+                                  {
+                                      auto value = arg.string | std::views::transform(::tolower);
+                                      sender.send(result<std::string>{{value.begin(), value.end()}});
+                                  },
+                                  [](const auto &...)
+                                  {
+                                      expect(false);
+                                  }};
 
-                        sender.send(result<std::string>{value});
-                    }
-                });
+            receiver.recv(visit);
         }
     };
 

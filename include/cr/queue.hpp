@@ -1,9 +1,12 @@
 #pragma once
+
 #include <queue>
-#include <mutex>
 #include <chrono>
+
 #include <atomic>
 #include <optional>
+
+#include <mutex>
 #include <condition_variable>
 
 namespace cr
@@ -25,8 +28,8 @@ namespace cr
         std::condition_variable m_cond;
 
       protected:
-        std::atomic_size_t senders;
-        std::atomic_size_t receivers;
+        std::atomic<std::size_t> senders;
+        std::atomic<std::size_t> receivers;
 
       public:
         T pop();

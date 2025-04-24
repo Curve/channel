@@ -14,9 +14,6 @@ struct overloaded : Ts...
     using Ts::operator()...;
 };
 
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
 // NOLINTNEXTLINE
 suite<"variant"> variant_suite = []
 {

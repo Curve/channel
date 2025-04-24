@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.16)
-project(channel LANGUAGES CXX VERSION 2.2)
+cmake_minimum_required(VERSION 3.25)
+project(channel LANGUAGES CXX VERSION 3.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
@@ -21,7 +21,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_EXTENSIONS 
 # Include "include" folder
 # --------------------------------------------------------------------------------------------------------
 
-target_include_directories(${PROJECT_NAME} INTERFACE "include")
+target_include_directories(
+  ${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+                            $<INSTALL_INTERFACE:include/${PROJECT_NAME}-${PROJECT_VERSION}>
+)
 
 # --------------------------------------------------------------------------------------------------------
 # Compile tests
@@ -33,8 +36,22 @@ if (channel_tests)
 endif()
 
 # --------------------------------------------------------------------------------------------------------
-# Install Targets
+# Package Config
 # --------------------------------------------------------------------------------------------------------
 
-install(DIRECTORY "include/" TYPE INCLUDE)
-install(TARGETS ${PROJECT_NAME} INCLUDES DESTINATION include)
+include("cmake/cpm.cmake")
+
+CPMFindPackage(
+  NAME           PackageProject
+  VERSION        1.13.0
+  GIT_REPOSITORY "https://github.com/TheLartians/PackageProject.cmake"
+)
+
+packageProject(
+  NAMESPACE cr
+  NAME ${PROJECT_NAME}
+  VERSION ${PROJECT_VERSION}
+  BINARY_DIR ${PROJECT_BINARY_DIR}
+  INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include
+  INCLUDE_DESTINATION include/${PROJECT_NAME}-${PROJECT_VERSION}
+)

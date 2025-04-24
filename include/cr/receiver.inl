@@ -1,19 +1,9 @@
 #pragma once
+
 #include "receiver.hpp"
 
 namespace cr
 {
-    template <typename T>
-    receiver<T>::~receiver()
-    {
-        if (!m_queue)
-        {
-            return;
-        }
-
-        m_queue->receivers--;
-    }
-
     template <typename T>
     receiver<T>::receiver(std::shared_ptr<queue<T>> queue) : m_queue(queue)
     {
@@ -24,6 +14,17 @@ namespace cr
     receiver<T>::receiver(receiver &&other) noexcept : m_queue(std::move(other.m_queue))
     {
         other.m_queue = nullptr;
+    }
+
+    template <typename T>
+    receiver<T>::~receiver()
+    {
+        if (!m_queue)
+        {
+            return;
+        }
+
+        m_queue->receivers--;
     }
 
     template <typename T>
@@ -45,16 +46,14 @@ namespace cr
     }
 
     template <typename T>
-    template <typename Callback>
-        requires visitable<T, Callback>
+    template <Visitable<T> Callback>
     void receiver<T>::recv(Callback &&callback)
     {
         std::visit(std::forward<Callback>(callback), m_queue->pop());
     }
 
     template <typename T>
-    template <typename Callback>
-        requires visitable<T, Callback>
+    template <Visitable<T> Callback>
     void receiver<T>::try_recv(Callback &&callback)
     {
         auto rtn = m_queue->try_pop(std::chrono::milliseconds(0));
@@ -64,12 +63,11 @@ namespace cr
             return;
         }
 
-        std::visit(std::forward<Callback>(callback), rtn.value());
+        std::visit(std::forward<Callback>(callback), std::move(rtn.value()));
     }
 
     template <typename T>
-    template <typename Callback>
-        requires visitable<T, Callback>
+    template <Visitable<T> Callback>
     void receiver<T>::recv_timeout(Callback &&callback, std::chrono::milliseconds timeout)
     {
         auto rtn = m_queue->try_pop(timeout);
@@ -79,20 +77,18 @@ namespace cr
             return;
         }
 
-        std::visit(std::forward<Callback>(callback), rtn.value());
+        std::visit(std::forward<Callback>(callback), std::move(rtn.value()));
     }
 
     template <typename T>
-    template <typename O>
-        requires value_accessible<T, O>
+    template <ValueAccessible<T> O>
     O receiver<T>::recv_as()
     {
         return std::get<O>(m_queue->pop());
     }
 
     template <typename T>
-    template <typename O>
-        requires value_accessible<T, O>
+    template <ValueAccessible<T> O>
     std::optional<O> receiver<T>::try_recv_as()
     {
         auto rtn = m_queue->try_pop(std::chrono::milliseconds(0));
@@ -102,12 +98,11 @@ namespace cr
             return std::nullopt;
         }
 
-        return std::get<O>(rtn.value());
+        return std::get<O>(std::move(rtn.value()));
     }
 
     template <typename T>
-    template <typename O>
-        requires value_accessible<T, O>
+    template <ValueAccessible<T> O>
     std::optional<O> receiver<T>::recv_timeout_as(std::chrono::milliseconds timeout)
     {
         auto rtn = m_queue->try_pop(timeout);
@@ -117,6 +112,6 @@ namespace cr
             return std::nullopt;
         }
 
-        return std::get<O>(rtn.value());
+        return std::get<O>(std::move(rtn.value()));
     }
 } // namespace cr

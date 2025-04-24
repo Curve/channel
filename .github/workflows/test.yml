@@ -1,0 +1,65 @@
+on:
+  workflow_dispatch:
+  push:
+    branches: ["**"]
+    paths-ignore:
+      - "**/*.md"
+
+name: 🧪 Run Tests
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+
+      matrix:
+        config: [Release, Debug]
+        type: [gcc, clang, msvc, clang-cl, apple-clang]
+
+        include:
+          - type: gcc
+            os: ubuntu-latest
+            container: archlinux:base-devel
+            deps: pacman --noconfirm -Syu git cmake gcc ninja make
+
+          - type: clang
+            os: ubuntu-latest
+            container: archlinux:base-devel
+            deps: pacman --noconfirm -Syu git cmake clang ninja make
+
+          - type: msvc
+            os: windows-latest
+
+          - type: clang-cl
+            os: windows-latest
+            cmake_args: -T ClangCL -A x64
+
+          - type: apple-clang
+            os: macos-15
+            xcode: 16.3
+
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+
+    name: ${{ matrix.type }}-${{ matrix.config }}
+
+    steps:
+      - name: 📦 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧰 Dependencies
+        run: ${{ matrix.deps }}
+
+      - name: 🍏 Setup XCode
+        uses: maxim-lobanov/setup-xcode@v1
+        if: ${{ matrix.type == 'apple-clang' }}
+        with:
+          xcode-version: ${{ matrix.xcode }}
+
+      - name: 🔧 Compile
+        run: |
+          cmake -B build -Dchannel_tests=ON ${{ matrix.cmake_args }}
+          cmake --build build --config ${{ matrix.config }}
+
+      - name: 🔬 Run Tests
+        run: |
+          ctest --test-dir build/tests -C ${{ matrix.config }} --verbose --output-on-failure
