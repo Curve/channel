@@ -25,8 +25,9 @@ namespace cr
             using type = T;
         };
 
-        template <typename T>
-        struct deduce<sender<T>>
+        template <template <typename> typename Sender, typename T>
+            requires std::is_base_of_v<sender<T>, Sender<T>>
+        struct deduce<Sender<T>>
         {
             using type = T;
         };
