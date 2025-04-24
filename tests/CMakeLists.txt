@@ -34,7 +34,14 @@ CPMFindPackage(
   OPTIONS        "BOOST_UT_DISABLE_MODULE ON"
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Boost::ut cr::channel)
+CPMFindPackage(
+  NAME           fill
+  VERSION        1.0.0
+  GIT_REPOSITORY "https://github.com/saucer/fill"
+  OPTIONS        "fill_namespace std" "fill_silent ON"
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::ut saucer::fill cr::channel)
 
 # --------------------------------------------------------------------------------------------------------
 # Add Test-Target
