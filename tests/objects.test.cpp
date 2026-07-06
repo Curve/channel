@@ -49,10 +49,7 @@ suite<"object"> object_suite = []
                                       auto value = arg.string | std::views::transform(::tolower);
                                       sender.send(result<std::string>{{value.begin(), value.end()}});
                                   },
-                                  [](const auto &...)
-                                  {
-                                      expect(false);
-                                  }};
+                                  [](const auto &...) { expect(false); }};
 
             receiver.recv(visit);
         }
@@ -64,8 +61,8 @@ suite<"object"> object_suite = []
     std::jthread thread{handler, std::move(thread_receiver), std::move(thread_sender)};
 
     sender.send(add{.target = 20, .to_add = 10});
-    expect(eq(receiver.recv_as<result<int>>().result, 30));
+    expect(eq(receiver.recv_as<result<int>>()->result, 30));
 
     sender.send(lower{"TEST"});
-    expect(receiver.recv_as<result<std::string>>().result == "test");
+    expect(receiver.recv_as<result<std::string>>()->result == "test");
 };

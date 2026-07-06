@@ -21,8 +21,8 @@ suite<"variant"> variant_suite = []
 
     auto _t1 = [](decltype(receiver) receiver)
     {
-        expect(receiver.recv_as<int>() == 10);
-        expect(std::get<std::string>(receiver.recv()) == "Some message!");
+        expect(*receiver.recv_as<int>() == 10);
+        expect(std::get<std::string>(*receiver.recv()) == "Some message!");
 
         receiver.recv(
             []<typename T>(const T &what)
@@ -37,8 +37,8 @@ suite<"variant"> variant_suite = []
 
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
-        expect(receiver.try_recv_as<int>() == 10);
-        expect(std::get<std::string>(receiver.try_recv().value()) == "Some message!");
+        expect(*receiver.try_recv_as<int>() == 10);
+        expect(std::get<std::string>(receiver.try_recv()->value()) == "Some message!");
 
         bool called = false;
 
@@ -47,24 +47,22 @@ suite<"variant"> variant_suite = []
                                          expect(what == std::numbers::pi);
                                          called = true;
                                      },
-                                     [](auto &&) {
-                                     }});
+                                     [](auto &&) {}});
 
         expect(called);
 
-        expect(receiver.recv_timeout_as<int>(10s) == 10);
-        expect(std::get<std::string>(receiver.recv_timeout(10s).value()) == "Some message!");
+        expect(*receiver.try_recv_as<int>(10s) == 10);
+        expect(*receiver.try_recv_as<std::string>(10s) == "Some message!");
 
         called = false;
 
-        receiver.recv_timeout(overloaded{[&](double what)
-                                         {
-                                             expect(what == std::numbers::pi);
-                                             called = true;
-                                         },
-                                         [](auto &&) {
-                                         }},
-                              10s);
+        receiver.try_recv(overloaded{[&](double what)
+                                     {
+                                         expect(what == std::numbers::pi);
+                                         called = true;
+                                     },
+                                     [](auto &&) {}},
+                          10s);
 
         expect(called);
     };

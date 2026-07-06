@@ -14,9 +14,9 @@ suite<"single"> single_suite = []
 
     auto _t1 = [](auto receiver)
     {
-        expect(receiver.recv() == "Some message!");
-        expect(receiver.try_recv() == "Another message!");
-        expect(receiver.recv_timeout(15s) == "Some message!");
+        expect(*receiver.recv() == "Some message!");
+        expect(*receiver.try_recv() == "Another message!");
+        expect(*receiver.try_recv(15s) == "Some message!");
     };
 
     std::jthread t1{_t1, std::move(receiver)};

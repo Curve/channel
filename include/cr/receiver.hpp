@@ -19,13 +19,16 @@ namespace cr
     template <typename T>
     class receiver
     {
+        using duration = std::chrono::milliseconds;
+
+      private:
         std::shared_ptr<queue<T>> m_queue;
 
       public:
         receiver(std::shared_ptr<queue<T>>);
 
       public:
-        receiver(receiver &&) noexcept = default;
+        receiver(receiver &&) noexcept            = default;
         receiver &operator=(receiver &&) noexcept = default;
 
       public:
@@ -36,31 +39,22 @@ namespace cr
         ~receiver();
 
       public:
-        T recv();
-
-      public:
-        std::optional<T> try_recv();
-        std::optional<T> recv_timeout(std::chrono::milliseconds);
+        res<T> recv();
+        res<std::optional<T>> try_recv(duration = duration{0});
 
       public:
         template <Visitable<T> Callback>
-        void recv(Callback &&);
+        res<void> recv(Callback &&);
 
         template <Visitable<T> Callback>
-        void try_recv(Callback &&);
-
-        template <Visitable<T> Callback>
-        void recv_timeout(Callback &&, std::chrono::milliseconds);
+        res<bool> try_recv(Callback &&, duration = duration{0});
 
       public:
         template <ValueAccessible<T> O>
-        O recv_as();
+        res<O> recv_as();
 
         template <ValueAccessible<T> O>
-        std::optional<O> try_recv_as();
-
-        template <ValueAccessible<T> O>
-        std::optional<O> recv_timeout_as(std::chrono::milliseconds);
+        res<std::optional<O>> try_recv_as(duration = duration{0});
     };
 } // namespace cr
 

@@ -12,6 +12,26 @@
 namespace cr
 {
     template <typename T>
+    struct res
+    {
+        T value;
+        std::size_t remaining;
+
+      public:
+        template <typename Self>
+        decltype(auto) operator*(this Self &&);
+
+        template <typename Self>
+        decltype(auto) operator->(this Self &&);
+    };
+
+    template <>
+    struct res<void>
+    {
+        std::size_t remaining;
+    };
+
+    template <typename T>
     class queue
     {
         template <typename>
@@ -32,10 +52,10 @@ namespace cr
         std::atomic<std::size_t> receivers;
 
       public:
-        T pop();
+        res<T> pop();
 
       public:
-        std::optional<T> try_pop(std::chrono::milliseconds);
+        res<std::optional<T>> try_pop(std::chrono::milliseconds);
 
       public:
         template <typename... Args>

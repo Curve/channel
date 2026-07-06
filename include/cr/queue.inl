@@ -2,12 +2,27 @@
 
 #include "queue.hpp"
 
+#include <memory>
 #include <cassert>
 
 namespace cr
 {
     template <typename T>
-    T queue<T>::pop()
+    template <typename Self>
+    decltype(auto) res<T>::operator*(this Self &&self) // NOLINT(*-forward)
+    {
+        return self.value;
+    }
+
+    template <typename T>
+    template <typename Self>
+    decltype(auto) res<T>::operator->(this Self &&self) // NOLINT(*-forward)
+    {
+        return std::addressof(self.value);
+    }
+
+    template <typename T>
+    res<T> queue<T>::pop()
     {
         auto lock = std::unique_lock{m_mutex};
 
@@ -17,11 +32,14 @@ namespace cr
         auto rtn = std::move(m_queue.front());
         m_queue.pop();
 
-        return std::move(rtn);
+        return {
+            .value     = std::move(rtn),
+            .remaining = m_queue.size(),
+        };
     }
 
     template <typename T>
-    std::optional<T> queue<T>::try_pop(std::chrono::milliseconds timeout)
+    res<std::optional<T>> queue<T>::try_pop(std::chrono::milliseconds timeout)
     {
         auto lock = std::unique_lock{m_mutex};
 
@@ -30,13 +48,19 @@ namespace cr
 
         if (!success)
         {
-            return std::nullopt;
+            return {
+                .value     = std::nullopt,
+                .remaining = {},
+            };
         }
 
         auto rtn = std::move(m_queue.front());
         m_queue.pop();
 
-        return std::move(rtn);
+        return {
+            .value     = std::move(rtn),
+            .remaining = m_queue.size(),
+        };
     }
 
     template <typename T>

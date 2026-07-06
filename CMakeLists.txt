@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.25)
-project(channel LANGUAGES CXX VERSION 3.0.1)
+project(channel LANGUAGES CXX VERSION 4.0.0)
 
 # --------------------------------------------------------------------------------------------------------
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
-option(channel_tests "Build tests" OFF)
+option(channel_tests   "Build tests"        OFF)
+option(channel_install "Add install target"  ON)
 
 # --------------------------------------------------------------------------------------------------------
 # Create library
@@ -38,6 +39,10 @@ endif()
 # --------------------------------------------------------------------------------------------------------
 # Package Config
 # --------------------------------------------------------------------------------------------------------
+
+if (NOT channel_install)
+    return()
+endif()
 
 include("cmake/cpm.cmake")
 

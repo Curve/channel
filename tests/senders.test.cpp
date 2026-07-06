@@ -15,8 +15,8 @@ suite<"sender"> sender_suite = []
 
     auto _t1 = [](auto receiver)
     {
-        expect(receiver.recv().starts_with("Test"));
-        expect(receiver.recv().starts_with("Test"));
+        expect(receiver.recv()->starts_with("Test"));
+        expect(receiver.recv()->starts_with("Test"));
     };
     std::jthread t1{_t1, std::move(receiver)};
 

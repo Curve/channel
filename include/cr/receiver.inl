@@ -22,90 +22,80 @@ namespace cr
     }
 
     template <typename T>
-    T receiver<T>::recv()
+    res<T> receiver<T>::recv()
     {
         return m_queue->pop();
     }
 
     template <typename T>
-    std::optional<T> receiver<T>::try_recv()
-    {
-        return m_queue->try_pop(std::chrono::milliseconds(0));
-    }
-
-    template <typename T>
-    std::optional<T> receiver<T>::recv_timeout(std::chrono::milliseconds timeout)
+    res<std::optional<T>> receiver<T>::try_recv(std::chrono::milliseconds timeout)
     {
         return m_queue->try_pop(timeout);
     }
 
     template <typename T>
     template <Visitable<T> Callback>
-    void receiver<T>::recv(Callback &&callback)
+    res<void> receiver<T>::recv(Callback &&callback)
     {
-        std::visit(std::forward<Callback>(callback), m_queue->pop());
+        auto [value, remaining] = m_queue->pop();
+        std::visit(std::forward<Callback>(callback), std::move(value));
+
+        return {
+            .remaining = remaining,
+        };
     }
 
     template <typename T>
     template <Visitable<T> Callback>
-    void receiver<T>::try_recv(Callback &&callback)
+    res<bool> receiver<T>::try_recv(Callback &&callback, duration timeout)
     {
-        auto rtn = m_queue->try_pop(std::chrono::milliseconds(0));
+        auto [value, remaining] = m_queue->try_pop(timeout);
 
-        if (!rtn.has_value())
+        if (!value.has_value())
         {
-            return;
+            return {
+                .value     = false,
+                .remaining = {},
+            };
         }
 
-        std::visit(std::forward<Callback>(callback), std::move(rtn.value()));
-    }
+        std::visit(std::forward<Callback>(callback), std::move(*value));
 
-    template <typename T>
-    template <Visitable<T> Callback>
-    void receiver<T>::recv_timeout(Callback &&callback, std::chrono::milliseconds timeout)
-    {
-        auto rtn = m_queue->try_pop(timeout);
-
-        if (!rtn.has_value())
-        {
-            return;
-        }
-
-        std::visit(std::forward<Callback>(callback), std::move(rtn.value()));
+        return {
+            .value     = true,
+            .remaining = remaining,
+        };
     }
 
     template <typename T>
     template <ValueAccessible<T> O>
-    O receiver<T>::recv_as()
+    res<O> receiver<T>::recv_as()
     {
-        return std::get<O>(m_queue->pop());
+        auto [value, remaining] = m_queue->pop();
+
+        return {
+            .value     = std::get<O>(std::move(value)),
+            .remaining = remaining,
+        };
     }
 
     template <typename T>
     template <ValueAccessible<T> O>
-    std::optional<O> receiver<T>::try_recv_as()
+    res<std::optional<O>> receiver<T>::try_recv_as(duration timeout)
     {
-        auto rtn = m_queue->try_pop(std::chrono::milliseconds(0));
+        auto [value, remaining] = m_queue->try_pop(timeout);
 
-        if (!rtn.has_value())
+        if (!value.has_value())
         {
-            return std::nullopt;
+            return {
+                .value     = std::nullopt,
+                .remaining = {},
+            };
         }
 
-        return std::get<O>(std::move(rtn.value()));
-    }
-
-    template <typename T>
-    template <ValueAccessible<T> O>
-    std::optional<O> receiver<T>::recv_timeout_as(std::chrono::milliseconds timeout)
-    {
-        auto rtn = m_queue->try_pop(timeout);
-
-        if (!rtn.has_value())
-        {
-            return std::nullopt;
-        }
-
-        return std::get<O>(std::move(rtn.value()));
+        return {
+            .value     = std::get<O>(std::move(*value)),
+            .remaining = remaining,
+        };
     }
 } // namespace cr
