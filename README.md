@@ -10,7 +10,7 @@ A C++23 library that provides a rust like `std::sync::mpsc::channel` for inter-t
 
 > [!NOTE]  
 > This library requires a C++23 capable compiler.  
-> See `v3.0.1` for C++23 support or commits prior to [6977815](https://github.com/Curve/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb) for C++17 support.
+> See `v3.0.1` for C++20 support or commits prior to [6977815](https://github.com/Curve/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb) for C++17 support.
 
 - FetchContent
     ```cmake
