@@ -2,15 +2,15 @@
 
 # 🧵 channel
 
-A C++20 library that provides a rust like `std::sync::mpsc::channel` for inter-thread communication.
+A C++23 library that provides a rust like `std::sync::mpsc::channel` for inter-thread communication.
 
 </div>
 
 # 📦 Installation
 
 > [!NOTE]  
-> This library requires a C++20 capable compiler.
-> In case you need support for C++17 checkout commits prior to [6977815](https://github.com/Curve/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb)
+> This library requires a C++23 capable compiler.  
+> See `v3.0.1` for C++23 support or commits prior to [6977815](https://github.com/Curve/channel/tree/6977815409b4c3c02d74a7aee3fc29f01d632feb) for C++17 support.
 
 - FetchContent
     ```cmake
@@ -33,8 +33,8 @@ A C++20 library that provides a rust like `std::sync::mpsc::channel` for inter-t
 # 📒 Examples
 
 ```cpp
+#include <print>
 #include <thread>
-#include <iostream>
 
 #include <cr/channel.hpp>
 
@@ -50,13 +50,13 @@ std::thread t1([sender = std::move(sender)]() mutable
 // Do some useful work for awhile
 
 // Let's see what that first answer was
-std::cout << receiver.recv_as<int>() << std::endl;
+std::println("{}", *receiver.recv_as<int>());
 
 // Let's see what that second answer was
-std::cout << receiver.recv_as<float>() << std::endl;
+std::println("{}", *receiver.recv_as<float>());
 ```
 
 > **Note**  
-> This library also supports methods like `try_recv` and `recv_timeout`.
+> This library also supports methods like `try_recv` and `try_recv(timeout)`.
 
 > For more examples see [tests](tests/)
